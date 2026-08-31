@@ -31,6 +31,9 @@ async function main(): Promise<void> {
   });
 
   // Swagger UI — inject the current host at request time so it works on any deployment
+  
+
+
   app.use('/api-docs', swaggerUi.serve);
   app.get('/api-docs', (req, res, next) => {
     const proto = (req.headers['x-forwarded-proto'] as string | undefined)?.split(',')[0].trim() ?? req.protocol;
