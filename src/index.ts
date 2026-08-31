@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
 import jwt from 'jsonwebtoken';
 import { config } from './config';
 import { ocrRouter } from './api/ocr.routes';
@@ -15,6 +14,7 @@ async function main(): Promise<void> {
   await ensureDir(config.storage.tempDir);
 
   const app = express();
+  app.set('trust proxy', 1); // required on Render — reads X-Forwarded-Proto as the real protocol
   app.use(cors());
   app.use(express.json());
 
@@ -30,8 +30,17 @@ async function main(): Promise<void> {
     res.json({ token, userId: 'dev-user', expiresIn: '7d' });
   });
 
-  // Swagger UI — no auth required
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+  // Swagger UI — inject the current host at request time so it works on any deployment
+  
+
+
+  app.use('/api-docs', swaggerUi.serve);
+  app.get('/api-docs', (req, res, next) => {
+    const proto = (req.headers['x-forwarded-proto'] as string | undefined)?.split(',')[0].trim() ?? req.protocol;
+    const host = req.get('host') ?? 'localhost:3001';
+    const spec = { ...swaggerSpec, servers: [{ url: `${proto}://${host}` }] };
+    swaggerUi.setup(spec, swaggerUiOptions)(req, res, next);
+  });
 
   app.use('/api/memories', ocrRouter);
 
