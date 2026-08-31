@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// One Memory row per uploaded file.
+// This schema is designed to be extended by the main REMEMBER app.
+model Memory {
+  id           String    @id @default(cuid())
+  userId       String
+  originalPath String
+  mimeType     String
+  fileSize     Int
+  contentHash  String    // SHA-256 of raw file bytes
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  ocrResult    OcrResult?
+
+  @@index([userId])
+  @@index([contentHash])
+}
+
+// OcrStatus values: PENDING | PROCESSING | COMPLETED | PARTIAL | FAILED
+model OcrResult {
+  id              String     @id @default(cuid())
+  memoryId        String     @unique
+  memory          Memory     @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+  status          String     @default("PENDING")
+  extractedText   String?
+  language        String?
+  confidence      Float?
+  provider        String
+  providerVersion String?
+  processedAt     DateTime?
+  errorMessage    String?
+  retryCount      Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  pages           OcrPage[]
+}
+
+model OcrPage {
+  id          String    @id @default(cuid())
+  ocrResultId String
+  ocrResult   OcrResult @relation(fields: [ocrResultId], references: [id], onDelete: Cascade)
+  pageNumber  Int
+  text        String
+  confidence  Float?
+  createdAt   DateTime  @default(now())
+
+  @@index([ocrResultId])
+}

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+uploads/
+tmp/
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+credentials/
+.env
+*.log
