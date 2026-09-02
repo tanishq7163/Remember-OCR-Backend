@@ -56,7 +56,7 @@ export const config = {
   },
 
   auth: {
-    jwtSecret: optional('JWT_SECRET', ''),
+    jwtSecret: optional('JWT_SECRET', 'NhE5QhhFvvsA5DTMCOvJVoF7uawXt43xHZMZSXcgXNjKCnP6FvWOXQCTSQszOoM4WMjcEgkNzr+wzcoQxALg0A=='),
   },
 
   rateLimit: {
