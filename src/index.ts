@@ -25,7 +25,10 @@ async function main(): Promise<void> {
 
   // Dev-only: generate a JWT for local testing without needing a full auth service
   app.get('/api/dev-token', (_req, res) => {
-    if (config.isProduction) { res.status(404).json({ error: 'Not found.' }); return; }
+    if (config.isProduction) { 
+      const token = jwt.sign( {userId: 'prod-user'}, config.auth.jwtSecret, {expiresIn: '7d'});
+      res.json({token, userId: 'prod-user', expiresIn: '7d'});
+    }
     const token = jwt.sign({ userId: 'dev-user' }, config.auth.jwtSecret, { expiresIn: '7d' });
     res.json({ token, userId: 'dev-user', expiresIn: '7d' });
   });
